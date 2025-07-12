@@ -15,8 +15,8 @@ type CarStoreInterface interface {
 }
 
 type EngineStoreInterface interface {
-	EngineById(ctx context.Context, id string) (models.Engine, error)
-	EngineCreated(ctx context.Context, engineRequest *models.EngineRequest) (models.Engine, error)
+	GetEngineById(ctx context.Context, id string) (models.Engine, error)
+	CreateEngine(ctx context.Context, engineRequest *models.EngineRequest) (models.Engine, error)
 	UpdateEngine(ctx context.Context, id string, engineRequest *models.EngineRequest) (models.Engine, error)
 	DeleteEngine(ctx context.Context, id string) (models.Engine, error)
 }

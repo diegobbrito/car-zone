@@ -16,7 +16,7 @@ func NewEngineService(store store.EngineStoreInterface) *EngineService {
 }
 
 func (s *EngineService) GetEngineById(ctx context.Context, id string) (*models.Engine, error) {
-	engine, err := s.store.EngineById(ctx, id)
+	engine, err := s.store.GetEngineById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (s *EngineService) CreateEngine(ctx context.Context, engineRequest *models.
 	if err := models.ValidateEngineRequest(*engineRequest); err != nil {
 		return nil, err
 	}
-	createdEngine, err := s.store.EngineCreated(ctx, engineRequest)
+	createdEngine, err := s.store.CreateEngine(ctx, engineRequest)
 	if err != nil {
 		return nil, err
 	}

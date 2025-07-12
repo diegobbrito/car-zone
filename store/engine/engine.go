@@ -18,7 +18,7 @@ func New(db *sql.DB) *EngineStore {
 	return &EngineStore{db: db}
 }
 
-func (e EngineStore) EngineById(ctx context.Context, id string) (models.Engine, error) {
+func (e EngineStore) GetEngineById(ctx context.Context, id string) (models.Engine, error) {
 	var engine models.Engine
 	tx, err := e.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -48,7 +48,7 @@ func (e EngineStore) EngineById(ctx context.Context, id string) (models.Engine, 
 	return engine, nil
 }
 
-func (e EngineStore) EngineCreated(ctx context.Context, engineRequest *models.EngineRequest) (models.Engine, error) {
+func (e EngineStore) CreateEngine(ctx context.Context, engineRequest *models.EngineRequest) (models.Engine, error) {
 	tx, err := e.db.BeginTx(ctx, nil)
 	if err != nil {
 		return models.Engine{}, err
