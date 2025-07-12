@@ -13,3 +13,10 @@ type CarServiceInterface interface {
 	UpdateCar(ctx context.Context, id string, carRequest *models.CarRequest) (models.Car, error)
 	DeleteCar(ctx context.Context, id string) (models.Car, error)
 }
+
+type EngineServiceInterface interface {
+	GetEngineByID(ctx context.Context, id string) (models.Engine, error)
+	CreateEngine(ctx context.Context, engineRequest *models.EngineRequest) (models.Engine, error)
+	UpdateEngine(ctx context.Context, id string, engineRequest *models.EngineRequest) (models.Engine, error)
+	DeleteEngine(ctx context.Context, id string) (models.Engine, error)
+}
