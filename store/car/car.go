@@ -14,7 +14,7 @@ type Store struct {
 	db *sql.DB
 }
 
-func new(db *sql.DB) Store {
+func New(db *sql.DB) Store {
 	return Store{db: db}
 }
 
@@ -138,7 +138,7 @@ func (s Store) CreateCar(cxt context.Context, carRequest *models.CarRequest) (mo
 
 }
 
-func (s Store) UpdateeCar(cxt context.Context, id string, carRequest *models.CarRequest) (models.Car, error) {
+func (s Store) UpdateCar(cxt context.Context, id string, carRequest *models.CarRequest) (models.Car, error) {
 	var updatedCar models.Car
 
 	tx, err := s.db.BeginTx(cxt, nil)
