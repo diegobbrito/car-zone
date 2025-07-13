@@ -15,7 +15,7 @@ func NewEngineService(store store.EngineStoreInterface) *EngineService {
 	return &EngineService{store: store}
 }
 
-func (s *EngineService) GetEngineById(ctx context.Context, id string) (*models.Engine, error) {
+func (s *EngineService) GetEngineByID(ctx context.Context, id string) (*models.Engine, error) {
 	engine, err := s.store.GetEngineById(ctx, id)
 	if err != nil {
 		return nil, err
