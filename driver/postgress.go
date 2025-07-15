@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"time"
+
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 var db *sql.DB
@@ -22,7 +24,8 @@ func InitDB() {
 	fmt.Println("Waiting for database connection...")
 	time.Sleep(5 * time.Second)
 
-	db, err := sql.Open("postgres", connStr)
+	var err error
+	db, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("Error connecting to the database: %v", err)
 	}
