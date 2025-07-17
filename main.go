@@ -10,6 +10,7 @@ import (
 	"github.com/diegobbrito/car-zone/driver"
 	carHandler "github.com/diegobbrito/car-zone/handler/car"
 	engineHandler "github.com/diegobbrito/car-zone/handler/engine"
+	"github.com/diegobbrito/car-zone/middleware"
 	carService "github.com/diegobbrito/car-zone/service/car"
 	engineService "github.com/diegobbrito/car-zone/service/engine"
 	carStore "github.com/diegobbrito/car-zone/store/car"
@@ -37,6 +38,8 @@ func main() {
 	engineHandler := engineHandler.NewEngineHandler(engineService)
 
 	router := mux.NewRouter()
+
+	router.Use(middleware.AuthMiddleware)
 
 	schemaFile := "store/schema.sql"
 	if err := executeSchema(db, schemaFile); err != nil {
