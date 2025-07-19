@@ -40,8 +40,6 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.Use(middleware.AuthMiddleware)
-
 	schemaFile := "store/schema.sql"
 	if err := executeSchema(db, schemaFile); err != nil {
 		log.Fatalf("Error executing schema: %v", err)
@@ -49,16 +47,20 @@ func main() {
 
 	router.HandleFunc("/login", loginHandler.LoginHandler).Methods("POST")
 
-	router.HandleFunc("/cars/{id}", carHandler.GetCarById).Methods("GET")
-	router.HandleFunc("/cars", carHandler.GetCarByBrand).Methods("GET")
-	router.HandleFunc("/cars", carHandler.CreateCar).Methods("POST")
-	router.HandleFunc("/cars/{id}", carHandler.UpdateCar).Methods("PUT")
-	router.HandleFunc("/cars/{id}", carHandler.DeleteCar).Methods("DELETE")
+	protected := router.PathPrefix("/").Subrouter()
 
-	router.HandleFunc("/engines/{id}", engineHandler.GetEngineByID).Methods("GET")
-	router.HandleFunc("/engines", engineHandler.CreateEngine).Methods("POST")
-	router.HandleFunc("/engines/{id}", engineHandler.UpdateEngine).Methods("PUT")
-	router.HandleFunc("/engines/{id}", engineHandler.DeleteEngine).Methods("DELETE")
+	protected.Use(middleware.AuthMiddleware)
+
+	protected.HandleFunc("/cars/{id}", carHandler.GetCarById).Methods("GET")
+	protected.HandleFunc("/cars", carHandler.GetCarByBrand).Methods("GET")
+	protected.HandleFunc("/cars", carHandler.CreateCar).Methods("POST")
+	protected.HandleFunc("/cars/{id}", carHandler.UpdateCar).Methods("PUT")
+	protected.HandleFunc("/cars/{id}", carHandler.DeleteCar).Methods("DELETE")
+
+	protected.HandleFunc("/engines/{id}", engineHandler.GetEngineByID).Methods("GET")
+	protected.HandleFunc("/engines", engineHandler.CreateEngine).Methods("POST")
+	protected.HandleFunc("/engines/{id}", engineHandler.UpdateEngine).Methods("PUT")
+	protected.HandleFunc("/engines/{id}", engineHandler.DeleteEngine).Methods("DELETE")
 
 	port := os.Getenv("PORT")
 	if port == "" {
