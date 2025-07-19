@@ -10,6 +10,7 @@ import (
 	"github.com/diegobbrito/car-zone/driver"
 	carHandler "github.com/diegobbrito/car-zone/handler/car"
 	engineHandler "github.com/diegobbrito/car-zone/handler/engine"
+	loginHandler "github.com/diegobbrito/car-zone/handler/login"
 	"github.com/diegobbrito/car-zone/middleware"
 	carService "github.com/diegobbrito/car-zone/service/car"
 	engineService "github.com/diegobbrito/car-zone/service/engine"
@@ -45,6 +46,8 @@ func main() {
 	if err := executeSchema(db, schemaFile); err != nil {
 		log.Fatalf("Error executing schema: %v", err)
 	}
+
+	router.HandleFunc("/login", loginHandler.LoginHandler).Methods("POST")
 
 	router.HandleFunc("/cars/{id}", carHandler.GetCarById).Methods("GET")
 	router.HandleFunc("/cars", carHandler.GetCarByBrand).Methods("GET")
