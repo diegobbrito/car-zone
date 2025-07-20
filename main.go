@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/diegobbrito/car-zone/driver"
 	carHandler "github.com/diegobbrito/car-zone/handler/car"
@@ -18,6 +20,11 @@ import (
 	engineStore "github.com/diegobbrito/car-zone/store/engine"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 )
 
 func main() {
@@ -84,4 +91,39 @@ func executeSchema(db *sql.DB, schemaFile string) error {
 	}
 	log.Println("Schema executed successfully")
 	return nil
+}
+
+func startTracing() (*trace.TracerProvider, error) {
+	header := map[string]string{
+		"Content-Type": "application/json",
+	}
+
+	exporter, err := otlptrace.New(
+		context.Background(),
+		otlptracehttp.NewClient(
+			otlptracehttp.WithEndpoint(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")),
+			otlptracehttp.WithHeaders(header),
+			otlptracehttp.WithInsecure(),
+		),
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create OTLP exporter: %w", err)
+	}
+
+	tracerProvider := trace.NewTracerProvider(
+		trace.WithBatcher(
+			exporter,
+			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
+			trace.WithBatchTimeout(trace.DefaultScheduleDelay*time.Millisecond),
+		),
+		trace.WithResource(
+			resource.NewWithAttributes(
+				semconv.SchemaURL,
+				semconv.ServiceNameKey.String("CarZone"),
+			),
+		),
+	)
+
+	return tracerProvider, nil
 }
