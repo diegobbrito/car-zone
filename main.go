@@ -20,6 +20,8 @@ import (
 	engineStore "github.com/diegobbrito/car-zone/store/engine"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -32,6 +34,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
+
+	traceProvider, err := startTracing()
+	if err != nil {
+		log.Fatalf("Error starting tracing: %v", err)
+	}
+
+	defer func() {
+		if err := traceProvider.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
+	otel.SetTracerProvider(traceProvider)
 
 	driver.InitDB()
 	defer driver.CloseDB()
@@ -46,6 +61,8 @@ func main() {
 	engineHandler := engineHandler.NewEngineHandler(engineService)
 
 	router := mux.NewRouter()
+
+	router.Use(otelmux.Middleware("CarZone"))
 
 	schemaFile := "store/schema.sql"
 	if err := executeSchema(db, schemaFile); err != nil {
