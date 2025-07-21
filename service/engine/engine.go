@@ -5,6 +5,7 @@ import (
 
 	"github.com/diegobbrito/car-zone/models"
 	"github.com/diegobbrito/car-zone/store"
+	"go.opentelemetry.io/otel"
 )
 
 type EngineService struct {
@@ -16,6 +17,9 @@ func NewEngineService(store store.EngineStoreInterface) *EngineService {
 }
 
 func (s *EngineService) GetEngineByID(ctx context.Context, id string) (*models.Engine, error) {
+	tracer := otel.Tracer("EngineService")
+	ctx, span := tracer.Start(ctx, "GetEngineByID-Service")
+	defer span.End()
 	engine, err := s.store.GetEngineById(ctx, id)
 	if err != nil {
 		return nil, err
@@ -24,6 +28,9 @@ func (s *EngineService) GetEngineByID(ctx context.Context, id string) (*models.E
 }
 
 func (s *EngineService) CreateEngine(ctx context.Context, engineRequest *models.EngineRequest) (*models.Engine, error) {
+	tracer := otel.Tracer("EngineService")
+	ctx, span := tracer.Start(ctx, "CreateEngine-Service")
+	defer span.End()
 	if err := models.ValidateEngineRequest(*engineRequest); err != nil {
 		return nil, err
 	}
@@ -35,6 +42,9 @@ func (s *EngineService) CreateEngine(ctx context.Context, engineRequest *models.
 }
 
 func (s *EngineService) UpdateEngine(ctx context.Context, id string, engineRequest *models.EngineRequest) (*models.Engine, error) {
+	tracer := otel.Tracer("EngineService")
+	ctx, span := tracer.Start(ctx, "UpdateEngine-Service")
+	defer span.End()
 	if err := models.ValidateEngineRequest(*engineRequest); err != nil {
 		return nil, err
 	}
@@ -46,6 +56,9 @@ func (s *EngineService) UpdateEngine(ctx context.Context, id string, engineReque
 }
 
 func (s *EngineService) DeleteEngine(ctx context.Context, id string) (*models.Engine, error) {
+	tracer := otel.Tracer("EngineService")
+	ctx, span := tracer.Start(ctx, "DeleteEngine-Service")
+	defer span.End()
 	deletedEngine, err := s.store.DeleteEngine(ctx, id)
 	if err != nil {
 		return nil, err
