@@ -10,6 +10,7 @@ import (
 	"github.com/diegobbrito/car-zone/service"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"go.opentelemetry.io/otel"
 )
 
 type EngineHandler struct {
@@ -23,7 +24,9 @@ func NewEngineHandler(service service.EngineServiceInterface) *EngineHandler {
 }
 
 func (e *EngineHandler) GetEngineByID(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	tracer := otel.Tracer("EngineHandler")
+	ctx, span := tracer.Start(r.Context(), "GetEngineByID-Handler")
+	defer span.End()
 	vars := mux.Vars(r)
 	id := vars["id"]
 	resp, err := e.service.GetEngineByID(ctx, id)
@@ -48,7 +51,9 @@ func (e *EngineHandler) GetEngineByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	tracer := otel.Tracer("EngineHandler")
+	ctx, span := tracer.Start(r.Context(), "CreateEngine-Handler")
+	defer span.End()
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -84,7 +89,9 @@ func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	tracer := otel.Tracer("EngineHandler")
+	ctx, span := tracer.Start(r.Context(), "UpdateEngine-Handler")
+	defer span.End()
 	params := mux.Vars(r)
 	id := params["id"]
 	body, err := io.ReadAll(r.Body)
@@ -119,7 +126,9 @@ func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *EngineHandler) DeleteEngine(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	tracer := otel.Tracer("EngineHandler")
+	ctx, span := tracer.Start(r.Context(), "DeleteEngine-Handler")
+	defer span.End()
 	params := mux.Vars(r)
 	id := params["id"]
 	deletedEngine, err := e.service.DeleteEngine(ctx, id)
