@@ -8,6 +8,7 @@ import (
 
 	"github.com/diegobbrito/car-zone/models"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
 )
 
 type Store struct {
@@ -19,6 +20,9 @@ func New(db *sql.DB) Store {
 }
 
 func (s Store) GetCarById(ctx context.Context, id string) (models.Car, error) {
+	tracer := otel.Tracer("CarStore")
+	ctx, span := tracer.Start(ctx, "GetCarById-Store")
+	defer span.End()
 	var car models.Car
 	query := `SELECT c.id, c.name, c.year, c.brand, c.fuel_type, c.engine_id, c.price, c.created_at, c.updated_at,
 	 	e.id, e.displacement, e.no_of_cylinders, e.car_range 
@@ -39,6 +43,9 @@ func (s Store) GetCarById(ctx context.Context, id string) (models.Car, error) {
 }
 
 func (s Store) GetCarByBrand(ctx context.Context, brand string, isEngine bool) ([]models.Car, error) {
+	tracer := otel.Tracer("CarStore")
+	ctx, span := tracer.Start(ctx, "GetCarByBrand-Store")
+	defer span.End()
 	var cars []models.Car
 	var query string
 	if isEngine {
@@ -81,11 +88,14 @@ func (s Store) GetCarByBrand(ctx context.Context, brand string, isEngine bool) (
 	return cars, nil
 }
 
-func (s Store) CreateCar(cxt context.Context, carRequest *models.CarRequest) (models.Car, error) {
+func (s Store) CreateCar(ctx context.Context, carRequest *models.CarRequest) (models.Car, error) {
+	tracer := otel.Tracer("CarStore")
+	ctx, span := tracer.Start(ctx, "CreateCar-Store")
+	defer span.End()
 	var createdCar models.Car
 	var engineId uuid.UUID
 
-	err := s.db.QueryRowContext(cxt, "SELECT id FROM engine WHERE id = $1", carRequest.Engine.EngineID).Scan(&engineId)
+	err := s.db.QueryRowContext(ctx, "SELECT id FROM engine WHERE id = $1", carRequest.Engine.EngineID).Scan(&engineId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return createdCar, errors.New("engine not found")
@@ -108,7 +118,7 @@ func (s Store) CreateCar(cxt context.Context, carRequest *models.CarRequest) (mo
 		UpdatedAt: updateAt,
 	}
 
-	tx, err := s.db.BeginTx(cxt, nil)
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return createdCar, err
 	}
@@ -124,7 +134,7 @@ func (s Store) CreateCar(cxt context.Context, carRequest *models.CarRequest) (mo
 			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 			  RETURNING id, name, year, brand, fuel_type, engine_id, price, created_at, updated_at`
 
-	err = tx.QueryRowContext(cxt, query,
+	err = tx.QueryRowContext(ctx, query,
 		newCar.ID, newCar.Name, newCar.Year, newCar.Brand, newCar.FuelType,
 		engineId, newCar.Price, newCar.CreatedAt, newCar.UpdatedAt,
 	).Scan(
@@ -138,10 +148,13 @@ func (s Store) CreateCar(cxt context.Context, carRequest *models.CarRequest) (mo
 
 }
 
-func (s Store) UpdateCar(cxt context.Context, id string, carRequest *models.CarRequest) (models.Car, error) {
+func (s Store) UpdateCar(ctx context.Context, id string, carRequest *models.CarRequest) (models.Car, error) {
+	tracer := otel.Tracer("CarStore")
+	ctx, span := tracer.Start(ctx, "UpdateCar-Store")
+	defer span.End()
 	var updatedCar models.Car
 
-	tx, err := s.db.BeginTx(cxt, nil)
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return updatedCar, err
 	}
@@ -156,7 +169,7 @@ func (s Store) UpdateCar(cxt context.Context, id string, carRequest *models.CarR
 			SET name = $2, year = $3, brand = $4, full_type = $5, engine_id = $6, price = $7, updated_at = $8
 			WHERE id = $1
 			RETURNING id, name, year, brand, fuel_type, engine_id, price, created_at, updated_at`
-	err = tx.QueryRowContext(cxt, query,
+	err = tx.QueryRowContext(ctx, query,
 		id, carRequest.Name, carRequest.Year, carRequest.Brand, carRequest.FuelType,
 		carRequest.Engine.EngineID, carRequest.Price, time.Now(),
 	).Scan(
@@ -170,6 +183,9 @@ func (s Store) UpdateCar(cxt context.Context, id string, carRequest *models.CarR
 }
 
 func (s Store) DeleteCar(ctx context.Context, id string) (models.Car, error) {
+	tracer := otel.Tracer("CarStore")
+	ctx, span := tracer.Start(ctx, "DeleteCar-Store")
+	defer span.End()
 	var deletedCar models.Car
 
 	tx, err := s.db.BeginTx(ctx, nil)
