@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS car;
+DROP TABLE IF EXISTS engine;
+
 -- Create engine table
 CREATE TABLE IF NOT EXISTS engine (
     id UUID PRIMARY KEY,
@@ -22,6 +25,9 @@ CREATE TABLE IF NOT EXISTS car (
 
 
 -- Add foreign key constraint on engine_id in car table
+
+ALTER TABLE car DROP CONSTRAINT IF EXISTS fk_engine_id;
+
 ALTER TABLE car
 ADD CONSTRAINT fk_engine_id
 FOREIGN KEY (engine_id)
